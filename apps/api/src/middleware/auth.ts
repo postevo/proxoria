@@ -10,6 +10,7 @@ declare global {
     interface Request {
       orgId: string;
       apiKeyId?: string;
+      apiKeyScopes?: string[];
       userId?: string;
       orgRole?: string;
     }
@@ -52,6 +53,7 @@ export async function authenticateApiKey(
 
     req.orgId = apiKey.orgId;
     req.apiKeyId = apiKey.id;
+    req.apiKeyScopes = apiKey.scopes;
 
     prisma.apiKey
       .update({ where: { id: apiKey.id }, data: { lastUsedAt: new Date() } })
@@ -140,3 +142,15 @@ export function requireOrgRole(...allowedClerkRoles: string[]) {
 
 export const requireAdmin = requireOrgRole("org:admin");
 export const requireMember = requireOrgRole("org:admin", "org:member");
+
+// ─── API Key Scope Enforcement ────────────────────────────────────────────────
+
+export function requireScope(scope: string) {
+  return (req: Request, _res: Response, next: NextFunction): void => {
+    const scopes = req.apiKeyScopes;
+    if (!scopes || !scopes.includes(scope)) {
+      return next(new ForbiddenError(`API key missing required scope: ${scope}`));
+    }
+    next();
+  };
+}
