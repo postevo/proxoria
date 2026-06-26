@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+  api:
+    image: ghcr.io/${GHCR_OWNER}/proxoria-api:latest
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    # Bind only to localhost — host Nginx proxies externally
+    ports:
+      - "127.0.0.1:3001:3001"
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  web:
+    image: ghcr.io/${GHCR_OWNER}/proxoria-web:latest
+    restart: unless-stopped
+    environment:
+      API_URL: ${API_URL}
+    # Bind only to localhost — host Nginx proxies externally
+    ports:
+      - "127.0.0.1:3000:3000"
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # Auto-pulls and restarts containers when GitHub Actions pushes new images
+  watchtower:
+    image: containrrr/watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 300 --cleanup --label-enable
+
+volumes:
+  postgres_data:
+  redis_data:

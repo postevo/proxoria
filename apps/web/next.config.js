@@ -1,6 +1,11 @@
+const path = require("path");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: { serverActions: { allowedOrigins: ["localhost:3000"] } },
+  output: "standalone",
+  // Ensures monorepo packages (packages/shared) are included in the standalone bundle
+  outputFileTracingRoot: path.join(__dirname, "../../"),
+  experimental: { serverActions: { allowedOrigins: ["localhost:3000", "proxoria.com"] } },
   env: {
     API_URL: process.env.API_URL || "http://localhost:3001",
   },

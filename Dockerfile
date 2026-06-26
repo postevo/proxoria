@@ -8,7 +8,7 @@ COPY packages/database/package*.json ./packages/database/
 COPY packages/shared/package*.json ./packages/shared/
 COPY apps/api/package*.json ./apps/api/
 
-RUN npm ci
+RUN npm install
 
 # ─── Stage 2: Build ──────────────────────────────────────────────────────────
 FROM deps AS builder
@@ -49,7 +49,7 @@ COPY packages/database/package*.json ./packages/database/
 COPY packages/shared/package*.json ./packages/shared/
 COPY apps/api/package*.json ./apps/api/
 
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 # Overwrite database package.json with the patched version (main → dist)
 COPY --from=builder /app/packages/database/package.json ./packages/database/package.json
