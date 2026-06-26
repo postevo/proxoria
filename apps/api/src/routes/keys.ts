@@ -59,12 +59,11 @@ keysRouter.post("/", async (req: Request, res: Response, next: NextFunction) => 
       },
     });
 
-    // Audit log
     await prisma.auditLog.create({
       data: {
         orgId: req.orgId,
-        actorId: req.apiKeyId,
-        actorType: "api_key",
+        actorId: req.userId ?? req.apiKeyId,
+        actorType: req.userId ? "user" : "api_key",
         action: "api_key.created",
         targetId: key.id,
         targetType: "api_key",
@@ -99,8 +98,8 @@ keysRouter.delete("/:id", async (req: Request, res: Response, next: NextFunction
     await prisma.auditLog.create({
       data: {
         orgId: req.orgId,
-        actorId: req.apiKeyId,
-        actorType: "api_key",
+        actorId: req.userId ?? req.apiKeyId,
+        actorType: req.userId ? "user" : "api_key",
         action: "api_key.revoked",
         targetId: key.id,
         targetType: "api_key",

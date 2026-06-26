@@ -1,15 +1,24 @@
 import axios from "axios";
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+// Module-level token getter — set by ClerkTokenProvider in client layouts
+let _getToken: (() => Promise<string | null>) | null = null;
+
+export function setTokenGetter(fn: () => Promise<string | null>) {
+  _getToken = fn;
+}
+
+// Dashboard management API — authenticated with Clerk session JWT
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
+  baseURL: BASE_URL,
   headers: { "Content-Type": "application/json" },
 });
 
-// Attach API key from localStorage (set after sign-in flow)
-api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const key = localStorage.getItem("ai_gateway_api_key");
-    if (key) config.headers["Authorization"] = `Bearer ${key}`;
+api.interceptors.request.use(async (config) => {
+  if (_getToken) {
+    const token = await _getToken();
+    if (token) config.headers["Authorization"] = `Bearer ${token}`;
   }
   return config;
 });
