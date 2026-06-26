@@ -6,6 +6,7 @@ import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import { logger } from "./lib/logger.js";
 import { apiRouter } from "./routes/api.js";
+import { authRouter } from "./routes/auth.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -29,7 +30,10 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Body parsing (billing webhook needs raw body — handled per-route inside billingRouter)
+// Stripe webhook must receive raw body for signature verification — must run before express.json()
+app.use("/v1/billing/webhook", express.raw({ type: "application/json" }));
+
+// Body parsing for all other routes
 app.use(express.json({ limit: "10mb" }));
 app.use(morgan("combined", { stream: { write: (msg) => logger.info(msg.trim()) } }));
 
@@ -37,6 +41,9 @@ app.use(morgan("combined", { stream: { write: (msg) => logger.info(msg.trim()) }
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", version: process.env.npm_package_version || "0.1.0" });
 });
+
+// Keep /auth at root for Clerk webhook backward compatibility
+app.use("/auth", authRouter);
 
 // All versioned routes
 app.use("/v1", apiRouter);

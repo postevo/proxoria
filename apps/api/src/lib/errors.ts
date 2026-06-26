@@ -50,3 +50,9 @@ export class ProviderError extends AppError {
     super(statusCode, "PROVIDER_ERROR", `${provider} API error: ${message}`);
   }
 }
+
+export class SubscriptionSuspendedError extends AppError {
+  constructor() {
+    super(402, "SUBSCRIPTION_SUSPENDED", "API access suspended due to a failed payment. Update your payment method at the billing dashboard.");
+  }
+}

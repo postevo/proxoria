@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { createHash } from "crypto";
 import { ClerkExpressWithAuth } from "@clerk/clerk-sdk-node";
 import { prisma } from "../lib/db.js";
-import { AuthError, ForbiddenError } from "../lib/errors.js";
+import { AuthError, ForbiddenError, SubscriptionSuspendedError } from "../lib/errors.js";
 import { logger } from "../lib/logger.js";
 
 declare global {
@@ -34,7 +34,7 @@ export async function authenticateApiKey(
   try {
     const apiKey = await prisma.apiKey.findUnique({
       where: { keyHash },
-      include: { org: { select: { id: true, plan: true } } },
+      include: { org: { select: { id: true, plan: true, subscriptionStatus: true } } },
     });
 
     if (!apiKey || apiKey.revokedAt) {
@@ -43,6 +43,11 @@ export async function authenticateApiKey(
 
     if (apiKey.expiresAt && apiKey.expiresAt < new Date()) {
       return next(new AuthError("API key expired"));
+    }
+
+    const suspendedStatuses = ["PAST_DUE", "UNPAID"] as const;
+    if (suspendedStatuses.includes(apiKey.org.subscriptionStatus as any)) {
+      return next(new SubscriptionSuspendedError());
     }
 
     req.orgId = apiKey.orgId;

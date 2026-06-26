@@ -32,18 +32,18 @@ const PLANS = [
   {
     key: "STARTER" as const,
     name: "Starter",
-    price: "$49",
+    price: "€99",
     period: "/month",
     description: "For small teams getting started with AI management.",
-    features: ["10M tokens/month", "3 team members", "14-day usage history", "Email support"],
+    features: ["Up to 1M tokens/day", "Up to 5 users", "Budget controls & alerts", "14-day trial", "Email support"],
   },
   {
     key: "PRO" as const,
     name: "Pro",
-    price: "$149",
+    price: "€299",
     period: "/month",
     description: "For growing teams with serious AI spend.",
-    features: ["Unlimited tokens", "Unlimited members", "90-day history", "Budget alerts", "Priority support"],
+    features: ["Up to 10M tokens/day", "Up to 25 users", "Usage-based overage billing", "90-day history", "Priority support"],
     highlight: true,
   },
 ];

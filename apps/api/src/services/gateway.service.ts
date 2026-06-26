@@ -10,6 +10,7 @@ import {
   ProviderKeyNotConfiguredError,
   ProviderError,
 } from "../lib/errors.js";
+import { reportUsageOverage } from "./billing.service.js";
 
 async function getDecryptedProviderKey(orgId: string, provider: string): Promise<string> {
   const dbProvider = provider.toUpperCase() as "ANTHROPIC" | "OPENAI" | "GOOGLE";
@@ -47,6 +48,11 @@ export async function routeRequest(
 
   logUsage(orgId, projectId, apiKeyId, req, response, 200).catch((e) =>
     logger.error({ err: e }, "Failed to log usage"),
+  );
+
+  // Report metered token usage to Stripe for overage billing (fire-and-forget)
+  reportUsageOverage(orgId, response.usage.totalTokens).catch((e) =>
+    logger.warn({ err: e }, "Failed to report usage overage to Stripe"),
   );
 
   return response;
