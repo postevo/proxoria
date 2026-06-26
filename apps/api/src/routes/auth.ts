@@ -2,6 +2,7 @@ import express, { Router, Request, Response } from "express";
 import { Webhook } from "svix";
 import { prisma } from "../lib/db.js";
 import { logger } from "../lib/logger.js";
+import { sendWelcomeEmail, sendActivationEmail } from "../services/email.service.js";
 
 export const authRouter = Router();
 
@@ -41,14 +42,53 @@ authRouter.post(
 
     try {
       switch (event.type) {
+        case "user.created": {
+          const d = event.data as {
+            id: string;
+            first_name?: string;
+            email_addresses: { email_address: string; primary: boolean }[];
+          };
+          const primaryEmail = d.email_addresses.find((e) => e.primary)?.email_address
+            ?? d.email_addresses[0]?.email_address;
+          if (primaryEmail) {
+            sendWelcomeEmail(primaryEmail, d.first_name).catch((err) =>
+              logger.error({ err }, "Failed to queue welcome email"),
+            );
+          }
+          logger.info({ clerkUserId: d.id }, "User created — welcome email queued");
+          break;
+        }
+
         case "organization.created": {
-          const d = event.data as { id: string; name: string; slug: string };
+          const d = event.data as {
+            id: string;
+            name: string;
+            slug: string;
+            created_by?: string;
+          };
           await prisma.organization.upsert({
             where: { clerkOrgId: d.id },
             create: { name: d.name, slug: d.slug, clerkOrgId: d.id },
             update: { name: d.name },
           });
           logger.info({ clerkOrgId: d.id }, "Organization synced");
+
+          // Send activation email to the org creator
+          if (d.created_by) {
+            try {
+              const { clerkClient } = await import("@clerk/clerk-sdk-node");
+              const user = await clerkClient.users.getUser(d.created_by);
+              const email = user.emailAddresses.find((e) => e.id === user.primaryEmailAddressId)
+                ?.emailAddress ?? user.emailAddresses[0]?.emailAddress;
+              if (email) {
+                sendActivationEmail(email, d.name).catch((err) =>
+                  logger.error({ err }, "Failed to queue activation email"),
+                );
+              }
+            } catch (err) {
+              logger.warn({ err }, "Could not fetch org creator for activation email");
+            }
+          }
           break;
         }
 

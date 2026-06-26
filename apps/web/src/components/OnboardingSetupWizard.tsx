@@ -7,8 +7,9 @@ import { clsx } from "clsx";
 
 const STEPS = [
   { id: 0, label: "Connect AI provider" },
-  { id: 1, label: "Create gateway key" },
-  { id: 2, label: "First call" },
+  { id: 1, label: "Invite team" },
+  { id: 2, label: "Create gateway key" },
+  { id: 3, label: "First call" },
 ];
 
 const PROVIDERS = [
@@ -45,7 +46,14 @@ export function OnboardingSetupWizard() {
   const [savingProvider, setSavingProvider] = useState(false);
   const [providerError, setProviderError] = useState("");
 
-  // Step 1 state
+  // Step 1 state (team invite)
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"org:admin" | "org:member" | "org:viewer">("org:member");
+  const [inviting, setInviting] = useState(false);
+  const [inviteError, setInviteError] = useState("");
+  const [inviteSent, setInviteSent] = useState<string[]>([]);
+
+  // Step 2 state
   const [keyName, setKeyName] = useState("Production");
   const [createdKey, setCreatedKey] = useState("");
   const [creatingKey, setCreatingKey] = useState(false);
@@ -66,13 +74,28 @@ export function OnboardingSetupWizard() {
     }
   }
 
+  async function sendInvite() {
+    if (!inviteEmail.trim()) return;
+    setInviting(true);
+    setInviteError("");
+    try {
+      await api.post("/v1/teams/invite", { emailAddress: inviteEmail.trim(), role: inviteRole });
+      setInviteSent((prev) => [...prev, inviteEmail.trim()]);
+      setInviteEmail("");
+    } catch (err: any) {
+      setInviteError(err.response?.data?.error ?? "Failed to send invite.");
+    } finally {
+      setInviting(false);
+    }
+  }
+
   async function createGatewayKey() {
     setCreatingKey(true);
     setKeyError("");
     try {
       const res = await api.post("/v1/keys", { name: keyName || "Production" });
       setCreatedKey(res.data.key);
-      setStep(2);
+      setStep(3);
     } catch (err: any) {
       setKeyError(err.response?.data?.error ?? "Failed to create key.");
     } finally {
@@ -199,6 +222,75 @@ export function OnboardingSetupWizard() {
         {step === 1 && (
           <div className="space-y-6">
             <div>
+              <h2 className="text-lg font-semibold text-gray-900">Invite your team <span className="text-gray-400 font-normal text-sm">(optional)</span></h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Add teammates now so they can access usage and call the gateway. You can invite more later.
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && sendInvite()}
+                placeholder="colleague@company.com"
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+              <select
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value as typeof inviteRole)}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              >
+                <option value="org:admin">Admin</option>
+                <option value="org:member">Member</option>
+                <option value="org:viewer">Viewer</option>
+              </select>
+              <button
+                onClick={sendInvite}
+                disabled={!inviteEmail.trim() || inviting}
+                className="bg-brand-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors whitespace-nowrap"
+              >
+                {inviting ? "Sending…" : "Send invite"}
+              </button>
+            </div>
+
+            {inviteError && (
+              <p className="text-sm text-red-600 bg-red-50 rounded-lg px-4 py-3">{inviteError}</p>
+            )}
+
+            {inviteSent.length > 0 && (
+              <div className="space-y-1">
+                {inviteSent.map((email) => (
+                  <div key={email} className="flex items-center gap-2 text-sm text-green-700 bg-green-50 rounded-lg px-4 py-2">
+                    <span>✓</span> <span>Invite sent to {email}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setStep(2)}
+                className="flex-1 bg-brand-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors"
+              >
+                Continue →
+              </button>
+              {inviteSent.length === 0 && (
+                <button
+                  onClick={() => setStep(2)}
+                  className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Skip for now
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-6">
+            <div>
               <h2 className="text-lg font-semibold text-gray-900">Create your gateway API key</h2>
               <p className="text-sm text-gray-500 mt-1">
                 This is the key your apps use to call the AI Gateway. You can create more later.
@@ -229,7 +321,7 @@ export function OnboardingSetupWizard() {
           </div>
         )}
 
-        {step === 2 && (
+        {step === 3 && (
           <div className="space-y-6">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">You're all set! Make your first call.</h2>
