@@ -32,7 +32,7 @@ gatewayRouter.post("/chat", async (req: Request, res: Response, next: NextFuncti
       parsed.data,
       req.orgId,
       parsed.data.projectId,
-      req.apiKeyId,
+      req.apiKeyId!,
     );
     res.json(result);
   } catch (err) {
