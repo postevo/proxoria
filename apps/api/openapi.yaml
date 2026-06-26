@@ -1,0 +1,511 @@
+openapi: 3.1.0
+info:
+  title: AI Gateway Platform API
+  version: 0.1.0
+  description: |
+    Unified LLM routing gateway. Proxy chat completions to Claude, GPT-4, and Gemini
+    through a single endpoint using your own provider API keys (BYOK).
+
+servers:
+  - url: http://localhost:3001
+    description: Local development
+  - url: https://api.yourdomain.com
+    description: Production
+
+security:
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      description: Gateway API key (ak_live_…). Create via POST /v1/keys.
+
+  schemas:
+    ChatMessage:
+      type: object
+      required: [role, content]
+      properties:
+        role:
+          type: string
+          enum: [user, assistant, system]
+        content:
+          type: string
+
+    GatewayRequest:
+      type: object
+      required: [provider, messages]
+      properties:
+        provider:
+          type: string
+          enum: [anthropic, openai, google]
+          description: LLM provider to route to
+        model:
+          type: string
+          description: Provider model ID. Defaults to provider's recommended model.
+          example: claude-sonnet-4-6
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+          minItems: 1
+        maxTokens:
+          type: integer
+          minimum: 1
+          maximum: 100000
+          default: 4096
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+        systemPrompt:
+          type: string
+          description: System prompt (handled provider-natively)
+        projectId:
+          type: string
+          description: Optional project ID for per-project budget tracking
+
+    GatewayResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Provider-native request/completion ID
+        provider:
+          type: string
+          enum: [anthropic, openai, google]
+        model:
+          type: string
+          description: Exact model used (may differ from requested if aliased)
+        content:
+          type: string
+          description: Assistant response text
+        usage:
+          type: object
+          properties:
+            promptTokens:
+              type: integer
+            completionTokens:
+              type: integer
+            totalTokens:
+              type: integer
+        latencyMs:
+          type: integer
+          description: End-to-end latency in milliseconds
+        costUsd:
+          type: number
+          format: double
+          description: Estimated cost in USD based on public pricing
+
+    ProviderKeyRecord:
+      type: object
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+          enum: [ANTHROPIC, OPENAI, GOOGLE]
+        label:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ApiKey:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        keyPrefix:
+          type: string
+          description: First 12 chars of key for display (e.g. ak_live_abcd)
+        scopes:
+          type: array
+          items:
+            type: string
+        lastUsedAt:
+          type: string
+          format: date-time
+          nullable: true
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    UsageSummary:
+      type: object
+      properties:
+        period:
+          type: string
+        since:
+          type: string
+          format: date-time
+        total:
+          type: object
+          properties:
+            requests:
+              type: integer
+            tokens:
+              type: integer
+            costUsd:
+              type: number
+        byProvider:
+          type: array
+          items:
+            type: object
+            properties:
+              provider:
+                type: string
+              requests:
+                type: integer
+              tokens:
+                type: integer
+              costUsd:
+                type: number
+        byDay:
+          type: array
+          items:
+            type: object
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+        statusCode:
+          type: integer
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      security: []
+      tags: [System]
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  version:
+                    type: string
+
+  /v1/gateway/chat:
+    post:
+      summary: Route a chat completion
+      description: |
+        Proxy a chat completion request to the specified LLM provider.
+        The org must have a provider key stored via PUT /v1/provider-keys/{provider}.
+        All requests are logged with token counts, latency, and cost estimate.
+      tags: [Gateway]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GatewayRequest"
+            examples:
+              claude:
+                summary: Claude request
+                value:
+                  provider: anthropic
+                  model: claude-sonnet-4-6
+                  messages:
+                    - role: user
+                      content: What is the capital of France?
+              gpt4o:
+                summary: GPT-4o request
+                value:
+                  provider: openai
+                  model: gpt-4o
+                  messages:
+                    - role: user
+                      content: What is the capital of France?
+              gemini:
+                summary: Gemini request
+                value:
+                  provider: google
+                  model: gemini-1.5-flash
+                  messages:
+                    - role: user
+                      content: What is the capital of France?
+      responses:
+        "200":
+          description: Successful completion
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GatewayResponse"
+        "400":
+          description: Invalid request or provider key not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "402":
+          description: Budget exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded (gateway or provider)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: Provider API error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /v1/gateway/models:
+    get:
+      summary: List supported models
+      tags: [Gateway]
+      responses:
+        "200":
+          description: List of supported models
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  models:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        provider:
+                          type: string
+                        id:
+                          type: string
+                        contextWindow:
+                          type: integer
+
+  /v1/provider-keys:
+    get:
+      summary: List configured provider keys
+      description: Returns configured providers without exposing key material.
+      tags: [Provider Keys]
+      responses:
+        "200":
+          description: List of configured provider keys
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProviderKeyRecord"
+
+  /v1/provider-keys/{provider}:
+    put:
+      summary: Store or update a provider API key
+      description: |
+        Store your LLM provider API key encrypted at rest (AES-256-GCM).
+        The plaintext key is never returned after storage.
+        Upserts: calling again replaces the existing key.
+      tags: [Provider Keys]
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [anthropic, openai, google]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key]
+              properties:
+                key:
+                  type: string
+                  description: Your provider API key (sk-ant-…, sk-…, AIza…)
+                label:
+                  type: string
+                  description: Optional display label
+      responses:
+        "200":
+          description: Provider key stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProviderKeyRecord"
+        "400":
+          description: Invalid provider or request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: Remove a provider key
+      tags: [Provider Keys]
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [anthropic, openai, google]
+      responses:
+        "204":
+          description: Provider key removed
+        "404":
+          description: No key configured for this provider
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /v1/keys:
+    get:
+      summary: List gateway API keys
+      tags: [API Keys]
+      responses:
+        "200":
+          description: List of gateway API keys
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApiKey"
+    post:
+      summary: Create a new gateway API key
+      description: The raw key is returned ONCE at creation — store it securely.
+      tags: [API Keys]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                  default: [gateway:read, usage:read]
+                expiresAt:
+                  type: string
+                  format: date-time
+      responses:
+        "201":
+          description: API key created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiKey"
+                  - type: object
+                    properties:
+                      key:
+                        type: string
+                        description: Full API key — shown once only
+
+  /v1/keys/{id}:
+    delete:
+      summary: Revoke a gateway API key
+      tags: [API Keys]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Key revoked
+        "404":
+          description: Key not found
+
+  /v1/usage:
+    get:
+      summary: Get aggregated usage statistics
+      tags: [Usage]
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+            default: month
+        - name: projectId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Usage summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsageSummary"
+
+  /v1/usage/logs:
+    get:
+      summary: Get raw usage log entries
+      tags: [Usage]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 200
+      responses:
+        "200":
+          description: Paginated usage logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  limit:
+                    type: integer

@@ -16,15 +16,26 @@ model Organization {
   clerkOrgId String? @unique
   plan      Plan     @default(FREE)
   monthlyBudget Decimal? @db.Decimal(12, 4)
+
+  // Stripe billing
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  subscriptionStatus   SubscriptionStatus @default(TRIALING)
+  trialEndsAt          DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  members   OrgMember[]
-  apiKeys   ApiKey[]
-  projects  Project[]
-  usageLogs UsageLog[]
+  members      OrgMember[]
+  apiKeys      ApiKey[]
+  projects     Project[]
+  usageLogs    UsageLog[]
   budgetAlerts BudgetAlert[]
-  auditLogs AuditLog[]
+  auditLogs    AuditLog[]
+  providerKeys ProviderKey[]
+  stripeEvents StripeEvent[]
 }
 
 enum Plan {
@@ -32,6 +43,27 @@ enum Plan {
   STARTER
   PRO
   ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  PAUSED
+}
+
+// Idempotency store for processed Stripe webhook events
+model StripeEvent {
+  id          String       @id // Stripe event ID (evt_xxx)
+  orgId       String?
+  type        String
+  processedAt DateTime     @default(now())
+
+  org         Organization? @relation(fields: [orgId], references: [id])
+
+  @@index([orgId])
 }
 
 model OrgMember {
@@ -158,6 +190,26 @@ enum AlertPeriod {
   DAILY
   WEEKLY
   MONTHLY
+}
+
+// ─── Provider Keys (customer BYOK) ───────────────────────────────────────────
+
+model ProviderKey {
+  id           String      @id @default(cuid())
+  orgId        String
+  provider     LLMProvider
+  encryptedKey String      // AES-256-GCM ciphertext (hex)
+  iv           String      // GCM initialization vector (hex)
+  tag          String      // GCM auth tag (hex)
+  label        String?     // optional display name
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  org          Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, provider])
+  @@index([orgId])
 }
 
 // ─── Audit Log ───────────────────────────────────────────────────────────────

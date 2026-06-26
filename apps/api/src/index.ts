@@ -1,39 +1,36 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import { logger } from "./lib/logger.js";
-import { gatewayRouter } from "./routes/gateway.js";
-import { authRouter } from "./routes/auth.js";
-import { usageRouter } from "./routes/usage.js";
-import { keysRouter } from "./routes/keys.js";
-import { teamsRouter } from "./routes/teams.js";
-import { auditRouter } from "./routes/audit.js";
+import { apiRouter } from "./routes/api.js";
 import { errorHandler } from "./middleware/errorHandler.js";
-import { authenticateApiKey } from "./middleware/auth.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Security
 app.use(helmet());
-app.use(cors({
-  origin: process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000",
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000",
+    credentials: true,
+  }),
+);
 
-// Rate limiting
+// Rate limiting — generous for API gateway workloads
 const limiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
+  windowMs: 60 * 1000,
   max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
 });
 app.use(limiter);
 
-// Parsing
-app.use(express.json({ limit: "1mb" }));
+// Body parsing (billing webhook needs raw body — handled per-route inside billingRouter)
+app.use(express.json({ limit: "10mb" }));
 app.use(morgan("combined", { stream: { write: (msg) => logger.info(msg.trim()) } }));
 
 // Health check (unauthenticated)
@@ -41,16 +38,8 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok", version: process.env.npm_package_version || "0.1.0" });
 });
 
-// Auth routes (Clerk webhooks, internal token exchange)
-app.use("/auth", authRouter);
-
-// All other routes require API key
-app.use("/v1", authenticateApiKey);
-app.use("/v1/gateway", gatewayRouter);
-app.use("/v1/usage", usageRouter);
-app.use("/v1/keys", keysRouter);
-app.use("/v1/teams", teamsRouter);
-app.use("/v1/audit", auditRouter);
+// All versioned routes
+app.use("/v1", apiRouter);
 
 // Error handler must be last
 app.use(errorHandler);

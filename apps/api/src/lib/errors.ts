@@ -38,3 +38,15 @@ export class BudgetExceededError extends AppError {
     super(402, "BUDGET_EXCEEDED", "Organization or project budget exceeded");
   }
 }
+
+export class ProviderKeyNotConfiguredError extends AppError {
+  constructor(provider: string) {
+    super(400, "PROVIDER_KEY_NOT_CONFIGURED", `No API key configured for provider: ${provider}. Store your key via POST /v1/provider-keys.`);
+  }
+}
+
+export class ProviderError extends AppError {
+  constructor(provider: string, message: string, statusCode = 502) {
+    super(statusCode, "PROVIDER_ERROR", `${provider} API error: ${message}`);
+  }
+}

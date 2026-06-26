@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { createHash } from "crypto";
+import { ClerkExpressWithAuth } from "@clerk/clerk-sdk-node";
 import { prisma } from "../lib/db.js";
 import { AuthError, ForbiddenError } from "../lib/errors.js";
 import { logger } from "../lib/logger.js";
@@ -8,11 +9,14 @@ declare global {
   namespace Express {
     interface Request {
       orgId: string;
-      apiKeyId: string;
+      apiKeyId?: string;
       userId?: string;
+      orgRole?: string;
     }
   }
 }
+
+// ─── API Key Auth (gateway calls) ────────────────────────────────────────────
 
 export async function authenticateApiKey(
   req: Request,
@@ -44,14 +48,69 @@ export async function authenticateApiKey(
     req.orgId = apiKey.orgId;
     req.apiKeyId = apiKey.id;
 
-    // Update lastUsedAt async — don't await
     prisma.apiKey
       .update({ where: { id: apiKey.id }, data: { lastUsedAt: new Date() } })
       .catch((e) => logger.warn({ err: e }, "Failed to update key lastUsedAt"));
 
     next();
   } catch (err) {
-    logger.error({ err }, "Auth middleware error");
+    logger.error({ err }, "API key auth error");
     next(err);
   }
 }
+
+// ─── Clerk Session Auth (dashboard calls) ────────────────────────────────────
+
+export const withClerkAuth = ClerkExpressWithAuth();
+
+export async function authenticateClerkUser(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): Promise<void> {
+  const auth = (req as any).auth;
+  const userId: string | null = auth?.userId ?? null;
+  const clerkOrgId: string | null = auth?.orgId ?? null;
+
+  if (!userId) {
+    return next(new AuthError("Authentication required"));
+  }
+
+  if (!clerkOrgId) {
+    return next(new AuthError("No active organization — select an org in the dashboard"));
+  }
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { clerkOrgId },
+    });
+
+    if (!org) {
+      return next(new AuthError("Organization not found — it may not be synced yet"));
+    }
+
+    req.orgId = org.id;
+    req.userId = userId;
+    req.orgRole = auth?.orgRole ?? undefined;
+
+    next();
+  } catch (err) {
+    logger.error({ err }, "Clerk auth middleware error");
+    next(err);
+  }
+}
+
+// ─── RBAC ─────────────────────────────────────────────────────────────────────
+
+export function requireOrgRole(...allowedClerkRoles: string[]) {
+  return (req: Request, _res: Response, next: NextFunction): void => {
+    const role = req.orgRole;
+    if (!role || !allowedClerkRoles.includes(role)) {
+      return next(new ForbiddenError("Insufficient permissions for this action"));
+    }
+    next();
+  };
+}
+
+export const requireAdmin = requireOrgRole("org:admin");
+export const requireMember = requireOrgRole("org:admin", "org:member");
