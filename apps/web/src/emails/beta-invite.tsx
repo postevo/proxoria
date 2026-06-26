@@ -24,21 +24,21 @@ export function BetaInviteEmail({ recipientName, apiKey, slackInviteUrl }: BetaI
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Welcome to the AI Gateway beta</title>
+        <title>Welcome to the Proxoria beta</title>
       </head>
       <body style={styles.body}>
         <div style={styles.container}>
           {/* Header */}
           <div style={styles.header}>
-            <p style={styles.logo}>AI Gateway</p>
+            <p style={styles.logo}>Proxoria</p>
           </div>
 
           {/* Content */}
           <div style={styles.content}>
-            <h1 style={styles.heading}>Welcome to the AI Gateway beta, {recipientName}.</h1>
+            <h1 style={styles.heading}>Welcome to the Proxoria beta, {recipientName}.</h1>
 
             <p style={styles.paragraph}>
-              You&apos;re one of the first five customers to access AI Gateway — a unified control plane
+              You&apos;re one of the first five customers to access Proxoria — a unified control plane
               for Claude, GPT-4, and Gemini. Thank you for joining us early.
             </p>
 
@@ -129,13 +129,13 @@ export function BetaInviteEmail({ recipientName, apiKey, slackInviteUrl }: BetaI
           {/* Footer */}
           <div style={styles.footer}>
             <p style={styles.footerText}>
-              AI Gateway · Built for enterprise AI teams ·{" "}
+              Proxoria · Built for enterprise AI teams ·{" "}
               <a href="https://ai-gateway.dev" style={styles.footerLink}>
                 ai-gateway.dev
               </a>
             </p>
             <p style={styles.footerText}>
-              You received this because you signed up for the AI Gateway beta program.
+              You received this because you signed up for the Proxoria beta program.
             </p>
           </div>
         </div>

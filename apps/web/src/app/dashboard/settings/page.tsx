@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ProviderKeyManager } from "../../../components/ProviderKeyManager";
 import { BudgetSettings } from "../../../components/BudgetSettings";
 
-export const metadata: Metadata = { title: "Settings — AI Gateway" };
+export const metadata: Metadata = { title: "Settings — Proxoria" };
 
 export default function SettingsPage() {
   return (

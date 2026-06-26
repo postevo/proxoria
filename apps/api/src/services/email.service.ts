@@ -10,7 +10,7 @@ async function sendEmail(to: string, subject: string, html: string) {
   }
 
   const from =
-    process.env.EMAIL_FROM || "AI Gateway <onboarding@resend.dev>";
+    process.env.EMAIL_FROM || "Proxoria <onboarding@resend.dev>";
 
   try {
     const res = await fetch(RESEND_API_URL, {
@@ -47,14 +47,14 @@ function layout(body: string) {
 <body style="${baseStyle}">
   <div style="max-width:560px;margin:40px auto;background:#fff;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;">
     <div style="background:#2563eb;padding:24px 32px;">
-      <span style="color:#fff;font-size:20px;font-weight:700;">AI Gateway</span>
+      <span style="color:#fff;font-size:20px;font-weight:700;">Proxoria</span>
     </div>
     <div style="padding:32px;">
       ${body}
     </div>
     <div style="padding:16px 32px;background:#f9fafb;border-top:1px solid #f3f4f6;">
       <p style="margin:0;font-size:12px;color:#9ca3af;">
-        You're receiving this because you signed up for AI Gateway beta.
+        You're receiving this because you signed up for Proxoria beta.
         Questions? Reply to this email or reach us at <a href="mailto:support@ai-gateway.dev" style="color:#2563eb;">support@ai-gateway.dev</a>
       </p>
     </div>
@@ -96,7 +96,7 @@ function welcomeEmailHtml(firstName?: string) {
     : "https://app.ai-gateway.dev/onboarding";
 
   return layout(`
-    ${h1(`Welcome to AI Gateway, ${name}!`)}
+    ${h1(`Welcome to Proxoria, ${name}!`)}
     ${p("You're in beta — thanks for being an early adopter. You now have access to a unified AI gateway that routes requests to Claude, GPT-4, and Gemini with a single API key.")}
     ${p("Here's what you can do:")}
     ${tip("🔑", "BYOK model", "Bring your own provider API keys — your keys, your costs, full control.")}
@@ -106,7 +106,7 @@ function welcomeEmailHtml(firstName?: string) {
     ${p("Ready to make your first AI call?")}
     ${cta("Complete onboarding →", dashUrl)}
     ${p("The whole setup takes under 5 minutes. If you hit any snag, just reply to this email — we respond within a few hours.")}
-    <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">– Sam<br>Founder, AI Gateway</p>
+    <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">– Sam<br>Founder, Proxoria</p>
   `);
 }
 
@@ -136,7 +136,7 @@ function activationEmailHtml(orgName: string) {
   -d '{"provider":"anthropic","model":"claude-haiku-4-5-20251001",
        "messages":[{"role":"user","content":"Hello!"}]}'`)}
     ${p("Questions? Hit reply — we're happy to help.")}
-    <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">– Sam<br>Founder, AI Gateway</p>
+    <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">– Sam<br>Founder, Proxoria</p>
   `);
 }
 
@@ -150,7 +150,7 @@ function usageTipsEmailHtml() {
     : "https://app.ai-gateway.dev/dashboard";
 
   return layout(`
-    ${h1("5 tips to get the most out of AI Gateway")}
+    ${h1("5 tips to get the most out of Proxoria")}
     ${p("You've made your first call — here are a few things power users do to get more value:")}
     ${tip("📉", "Use model fallbacks", "Start with claude-haiku-4-5 or gpt-4o-mini for cheap tasks. Only reach for claude-opus-4-8 when quality matters.")}
     ${tip("🔑", "Create scoped keys", "Give each environment (dev/staging/prod) its own API key so you can rotate or revoke independently.")}
@@ -159,7 +159,7 @@ function usageTipsEmailHtml() {
     ${tip("📥", "Query logs via API", 'GET /v1/usage/logs returns raw call logs with provider, model, tokens, cost, and latency — pipe into your own dashboards.')}
     ${cta("View your dashboard →", dashUrl)}
     ${p("Anything you'd like to see in the product? Reply here — beta feedback shapes the roadmap directly.")}
-    <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">– Sam<br>Founder, AI Gateway</p>
+    <p style="margin:24px 0 0;font-size:14px;color:#6b7280;">– Sam<br>Founder, Proxoria</p>
   `);
 }
 
@@ -214,15 +214,15 @@ function budgetAlertHtml(params: BudgetAlertParams) {
 // ---------------------------------------------------------------------------
 
 export async function sendWelcomeEmail(to: string, firstName?: string) {
-  await sendEmail(to, "Welcome to AI Gateway 🎉", welcomeEmailHtml(firstName));
+  await sendEmail(to, "Welcome to Proxoria 🎉", welcomeEmailHtml(firstName));
 }
 
 export async function sendActivationEmail(to: string, orgName: string) {
-  await sendEmail(to, `Your AI Gateway org "${orgName}" is ready`, activationEmailHtml(orgName));
+  await sendEmail(to, `Your Proxoria org "${orgName}" is ready`, activationEmailHtml(orgName));
 }
 
 export async function sendUsageTipsEmail(to: string) {
-  await sendEmail(to, "5 tips to get the most out of AI Gateway", usageTipsEmailHtml());
+  await sendEmail(to, "5 tips to get the most out of Proxoria", usageTipsEmailHtml());
 }
 
 export async function sendBudgetAlertEmail(to: string, params: BudgetAlertParams) {

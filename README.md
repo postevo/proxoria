@@ -1,4 +1,4 @@
-# AI Gateway Platform
+# Proxoria Platform
 
 Enterprise AI management platform — unified gateway for Claude, GPT-4, and Gemini with cost tracking, budget alerts, and team access controls.
 

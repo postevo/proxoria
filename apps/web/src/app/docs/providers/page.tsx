@@ -182,7 +182,7 @@ export default function ProvidersPage() {
       <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm text-gray-600">
         <p className="font-medium text-gray-900 mb-1">Pricing note</p>
         <p>
-          Prices shown are the providers&apos; published rates. AI Gateway charges a flat monthly subscription —
+          Prices shown are the providers&apos; published rates. Proxoria charges a flat monthly subscription —
           there is no per-token markup. You pay Anthropic, OpenAI, or Google directly via your own API keys.
         </p>
         <p className="mt-2">

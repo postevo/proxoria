@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: AI Gateway Platform API
+  title: Proxoria Platform API
   version: 0.1.0
   description: |
     Unified LLM routing gateway. Proxy chat completions to Claude, GPT-4, and Gemini

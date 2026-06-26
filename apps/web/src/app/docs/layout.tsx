@@ -3,8 +3,8 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: {
-    default: "Documentation — AI Gateway",
-    template: "%s — AI Gateway Docs",
+    default: "Documentation — Proxoria",
+    template: "%s — Proxoria Docs",
   },
 };
 
@@ -34,7 +34,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="text-base font-bold text-gray-900">
-              AI Gateway
+              Proxoria
             </Link>
             <span className="text-gray-300">/</span>
             <Link href="/docs" className="text-sm text-gray-600 hover:text-gray-900">

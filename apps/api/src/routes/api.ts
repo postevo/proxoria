@@ -18,7 +18,7 @@ import {
 export const apiRouter = Router();
 
 apiRouter.get("/", (_req, res) => {
-  res.json({ message: "AI Gateway Platform API v1" });
+  res.json({ message: "Proxoria Platform API v1" });
 });
 
 // Clerk webhooks — no auth, has its own signature verification

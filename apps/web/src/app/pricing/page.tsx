@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PricingCtaButton } from "../../components/PricingCtaButton";
 
 export const metadata: Metadata = {
-  title: "Pricing — AI Gateway",
+  title: "Pricing — Proxoria",
   description: "Simple, transparent pricing for AI gateway management. Start free, scale as you grow.",
 };
 
@@ -112,7 +112,7 @@ export default function PricingPage() {
       <nav className="border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="text-xl font-bold text-gray-900">
-            AI Gateway
+            Proxoria
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/docs" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
@@ -278,7 +278,7 @@ export default function PricingPage() {
             },
             {
               q: "Do you mark up LLM API costs?",
-              a: "No. AI Gateway charges a flat monthly subscription. You pay Anthropic, OpenAI, and Google directly at their standard rates using your own API keys.",
+              a: "No. Proxoria charges a flat monthly subscription. You pay Anthropic, OpenAI, and Google directly at their standard rates using your own API keys.",
             },
             {
               q: "How does the Free tier work?",
@@ -305,7 +305,7 @@ export default function PricingPage() {
       <footer className="border-t border-gray-100 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-400">
           <Link href="/" className="font-semibold text-gray-900">
-            AI Gateway
+            Proxoria
           </Link>
           <nav className="flex gap-6">
             <Link href="/docs" className="hover:text-gray-700 transition-colors">Docs</Link>
@@ -313,7 +313,7 @@ export default function PricingPage() {
               hello@ai-gateway.dev
             </a>
           </nav>
-          <span>&copy; {new Date().getFullYear()} AI Gateway.</span>
+          <span>&copy; {new Date().getFullYear()} Proxoria.</span>
         </div>
       </footer>
     </div>

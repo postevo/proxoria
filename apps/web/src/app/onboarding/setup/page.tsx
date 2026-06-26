@@ -11,7 +11,7 @@ export default async function OnboardingSetupPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-2xl">
         <div className="mb-8 text-center">
-          <span className="text-2xl font-bold text-brand-600">AI Gateway</span>
+          <span className="text-2xl font-bold text-brand-600">Proxoria</span>
           <h1 className="text-xl font-semibold text-gray-900 mt-2">Let&apos;s get you set up</h1>
           <p className="text-gray-500 text-sm mt-1">
             This takes about 3 minutes. You&apos;ll make your first AI call by the end.

@@ -122,7 +122,7 @@ function OnboardingContent() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
       <div className="mb-6 text-center">
-        <span className="text-2xl font-bold text-blue-600">AI Gateway</span>
+        <span className="text-2xl font-bold text-blue-600">Proxoria</span>
         <p className="text-gray-400 mt-1 text-sm">Get set up in under 5 minutes</p>
       </div>
 
@@ -134,7 +134,7 @@ function OnboardingContent() {
             Create your organization
           </h2>
           <p className="text-gray-500 mb-6 text-sm">
-            Give your team a workspace in the AI Gateway.
+            Give your team a workspace in the Proxoria.
           </p>
           <CreateOrganization afterCreateOrganizationUrl="/onboarding?step=key" />
         </div>
@@ -150,7 +150,7 @@ function OnboardingContent() {
               Generate your API key
             </h2>
             <p className="text-gray-500 text-sm">
-              This key lets your apps call the AI Gateway. We only show it once
+              This key lets your apps call the Proxoria. We only show it once
               — store it safely.
             </p>
           </div>
