@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
 interface BillingStatus {
@@ -58,8 +59,27 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export function BillingOverview() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [successBanner, setSuccessBanner] = useState(searchParams.get("success") === "1");
+
+  // Auto-trigger checkout when arriving via pricing page with ?upgrade=PLAN
+  const upgradeParam = searchParams.get("upgrade") as "STARTER" | "PRO" | null;
+  useEffect(() => {
+    if (upgradeParam && (upgradeParam === "STARTER" || upgradeParam === "PRO")) {
+      handleUpgrade(upgradeParam);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Strip query params from URL after reading them (clean address bar)
+  useEffect(() => {
+    if (searchParams.get("success") || searchParams.get("upgrade")) {
+      router.replace("/dashboard/billing");
+    }
+  }, [searchParams, router]);
 
   const { data: status, isLoading } = useQuery<BillingStatus>({
     queryKey: ["billing-status"],
@@ -115,6 +135,25 @@ export function BillingOverview() {
 
   return (
     <div className="space-y-8">
+      {/* Success banner */}
+      {successBanner && (
+        <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-5 py-4">
+          <div className="flex items-center gap-3">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="text-green-600 shrink-0">
+              <path d="M16.5 5.5L8 14L3.5 9.5" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <p className="text-sm font-medium text-green-800">Subscription activated — welcome to your new plan!</p>
+          </div>
+          <button
+            onClick={() => setSuccessBanner(false)}
+            className="text-green-600 hover:text-green-800 text-lg leading-none"
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* Current plan card */}
       <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
         <div className="flex items-start justify-between flex-wrap gap-4">

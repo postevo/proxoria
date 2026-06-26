@@ -1,6 +1,8 @@
 import { Router, Request, Response, NextFunction } from "express";
+import { z } from "zod";
 import { prisma } from "../lib/db.js";
 import { NotFoundError } from "../lib/errors.js";
+import { requireAdmin } from "../middleware/auth.js";
 
 export const orgsRouter = Router();
 
@@ -35,6 +37,36 @@ orgsRouter.get("/me", async (req: Request, res: Response, next: NextFunction) =>
         projects: org._count.projects,
       },
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+const UpdateOrgSchema = z.object({
+  monthlyBudget: z.number().min(0).nullable().optional(),
+});
+
+// PATCH /v1/orgs/me — update org settings (admin only)
+orgsRouter.patch("/me", requireAdmin, async (req: Request, res: Response, next: NextFunction) => {
+  const parsed = UpdateOrgSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid request", details: parsed.error.issues });
+    return;
+  }
+
+  try {
+    const update: Record<string, unknown> = {};
+    if (parsed.data.monthlyBudget !== undefined) {
+      update.monthlyBudget = parsed.data.monthlyBudget;
+    }
+
+    const org = await prisma.organization.update({
+      where: { id: req.orgId },
+      data: update,
+      select: { id: true, name: true, plan: true, monthlyBudget: true },
+    });
+
+    res.json({ ...org, monthlyBudget: org.monthlyBudget ? Number(org.monthlyBudget) : null });
   } catch (err) {
     next(err);
   }

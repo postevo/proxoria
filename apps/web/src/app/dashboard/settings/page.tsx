@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
+import { ProviderKeyManager } from "../../../components/ProviderKeyManager";
+import { BudgetSettings } from "../../../components/BudgetSettings";
 
 export const metadata: Metadata = { title: "Settings — AI Gateway" };
 
 export default function SettingsPage() {
   return (
-    <div className="p-8">
-      <div className="mb-8">
+    <div className="p-8 max-w-2xl space-y-10">
+      <div>
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-500 mt-1">Organization and account settings</p>
+        <p className="text-gray-500 mt-1">Organization settings and provider configuration</p>
       </div>
-      <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm text-sm text-gray-500">
-        Coming soon — provider key management, budget controls, and data retention settings.
-      </div>
+      <ProviderKeyManager />
+      <BudgetSettings />
     </div>
   );
 }

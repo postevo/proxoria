@@ -509,3 +509,82 @@ paths:
                     type: integer
                   limit:
                     type: integer
+
+  /v1/orgs/me:
+    get:
+      summary: Get current organization
+      tags: [Organization]
+      security:
+        - ClerkAuth: []
+      responses:
+        "200":
+          description: Organization details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  slug:
+                    type: string
+                  plan:
+                    type: string
+                    enum: [FREE, STARTER, PRO, ENTERPRISE]
+                  monthlyBudget:
+                    type: number
+                    nullable: true
+                    description: Monthly USD spending cap (null = no limit)
+                  counts:
+                    type: object
+                    properties:
+                      members:
+                        type: integer
+                      activeApiKeys:
+                        type: integer
+                      projects:
+                        type: integer
+    patch:
+      summary: Update organization settings (admin only)
+      tags: [Organization]
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                monthlyBudget:
+                  type: number
+                  nullable: true
+                  minimum: 0
+                  description: Monthly USD spending cap. Send null to remove limit.
+      responses:
+        "200":
+          description: Updated organization
+
+  /v1/audit/logs:
+    get:
+      summary: Get audit log entries (admin only)
+      tags: [Audit]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 200
+      responses:
+        "200":
+          description: Paginated audit logs

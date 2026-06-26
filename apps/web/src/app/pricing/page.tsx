@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PricingCtaButton } from "../../components/PricingCtaButton";
 
 export const metadata: Metadata = {
   title: "Pricing — AI Gateway",
@@ -8,8 +9,9 @@ export const metadata: Metadata = {
 
 const PLANS = [
   {
+    key: "STARTER" as const,
     name: "Starter",
-    price: "€99",
+    price: "€49",
     period: "/month",
     description: "For small teams centralising their AI spend.",
     features: [
@@ -26,8 +28,9 @@ const PLANS = [
     highlight: false,
   },
   {
+    key: "PRO" as const,
     name: "Pro",
-    price: "€299",
+    price: "€199",
     period: "/month",
     description: "For growing teams with serious AI workloads.",
     features: [
@@ -129,16 +132,7 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
-              <Link
-                href="/sign-up"
-                className={`block text-center py-3 rounded-xl text-sm font-semibold transition-colors ${
-                  plan.highlight
-                    ? "bg-brand-600 text-white hover:bg-brand-700"
-                    : "bg-gray-900 text-white hover:bg-gray-700"
-                }`}
-              >
-                {plan.cta}
-              </Link>
+              <PricingCtaButton plan={plan.key} label={plan.cta} highlight={plan.highlight} />
             </div>
           ))}
         </div>
