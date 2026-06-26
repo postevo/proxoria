@@ -86,12 +86,33 @@ export async function authenticateClerkUser(
   }
 
   try {
-    const org = await prisma.organization.findUnique({
+    let org = await prisma.organization.findUnique({
       where: { clerkOrgId },
     });
 
     if (!org) {
-      return next(new AuthError("Organization not found — it may not be synced yet"));
+      // Race condition: org created in Clerk but webhook not yet processed — auto-provision
+      try {
+        const clerkRes = await fetch(
+          `https://api.clerk.com/v1/organizations/${clerkOrgId}`,
+          { headers: { Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}` } },
+        );
+        if (!clerkRes.ok) throw new Error(`Clerk API ${clerkRes.status}`);
+        const clerkOrg = await clerkRes.json();
+        const slug = (clerkOrg.slug ?? clerkOrgId)
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, "-")
+          .slice(0, 50);
+        org = await prisma.organization.upsert({
+          where: { clerkOrgId },
+          create: { name: clerkOrg.name, slug, clerkOrgId },
+          update: {},
+        });
+        logger.info({ clerkOrgId, orgId: org.id }, "Auto-provisioned org from Clerk");
+      } catch (provErr) {
+        logger.error({ err: provErr, clerkOrgId }, "Failed to auto-provision org");
+        return next(new AuthError("Organization not found — it may not be synced yet"));
+      }
     }
 
     req.orgId = org.id;

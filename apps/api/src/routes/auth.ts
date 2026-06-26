@@ -78,16 +78,19 @@ authRouter.post(
             where: { clerkOrgId: d.organization.id },
           });
           if (org) {
+            // First member of a new org is the owner
+            const existingCount = await prisma.orgMember.count({ where: { orgId: org.id } });
+            const role = existingCount === 0 ? "OWNER" : clerkRoleToOrgRole(d.role);
             await prisma.orgMember.upsert({
               where: { orgId_userId: { orgId: org.id, userId: d.public_user_data.user_id } },
               create: {
                 orgId: org.id,
                 userId: d.public_user_data.user_id,
-                role: clerkRoleToOrgRole(d.role),
+                role,
               },
-              update: { role: clerkRoleToOrgRole(d.role) },
+              update: { role },
             });
-            logger.info({ orgId: org.id, userId: d.public_user_data.user_id }, "Member synced");
+            logger.info({ orgId: org.id, userId: d.public_user_data.user_id, role }, "Member synced");
           }
           break;
         }
