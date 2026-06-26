@@ -7,6 +7,7 @@ import { clsx } from "clsx";
 
 const nav = [
   { href: "/dashboard", label: "Overview", icon: "📊" },
+  { href: "/dashboard/quickstart", label: "Quick Start", icon: "🚀" },
   { href: "/dashboard/usage", label: "Usage Logs", icon: "📋" },
   { href: "/dashboard/keys", label: "API Keys", icon: "🔑" },
   { href: "/dashboard/team", label: "Team", icon: "👥" },

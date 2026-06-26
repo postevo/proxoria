@@ -13,7 +13,7 @@ export default async function OnboardingPage() {
         <h1 className="text-2xl font-bold text-gray-900">Create your organization</h1>
         <p className="text-gray-500 mt-2">Set up a team to start using the AI Gateway.</p>
       </div>
-      <CreateOrganization afterCreateOrganizationUrl="/dashboard" />
+      <CreateOrganization afterCreateOrganizationUrl="/onboarding/setup" />
     </div>
   );
 }
