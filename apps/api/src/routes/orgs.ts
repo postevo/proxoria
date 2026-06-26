@@ -30,6 +30,7 @@ orgsRouter.get("/me", async (req: Request, res: Response, next: NextFunction) =>
       slug: org.slug,
       plan: org.plan,
       monthlyBudget: org.monthlyBudget ? Number(org.monthlyBudget) : null,
+      slackWebhookUrl: org.slackWebhookUrl,
       createdAt: org.createdAt,
       counts: {
         members: org._count.members,
@@ -44,6 +45,7 @@ orgsRouter.get("/me", async (req: Request, res: Response, next: NextFunction) =>
 
 const UpdateOrgSchema = z.object({
   monthlyBudget: z.number().min(0).nullable().optional(),
+  slackWebhookUrl: z.string().url().nullable().optional(),
 });
 
 // PATCH /v1/orgs/me — update org settings (admin only)
@@ -59,14 +61,20 @@ orgsRouter.patch("/me", requireAdmin, async (req: Request, res: Response, next: 
     if (parsed.data.monthlyBudget !== undefined) {
       update.monthlyBudget = parsed.data.monthlyBudget;
     }
+    if (parsed.data.slackWebhookUrl !== undefined) {
+      update.slackWebhookUrl = parsed.data.slackWebhookUrl;
+    }
 
     const org = await prisma.organization.update({
       where: { id: req.orgId },
       data: update,
-      select: { id: true, name: true, plan: true, monthlyBudget: true },
+      select: { id: true, name: true, plan: true, monthlyBudget: true, slackWebhookUrl: true },
     });
 
-    res.json({ ...org, monthlyBudget: org.monthlyBudget ? Number(org.monthlyBudget) : null });
+    res.json({
+      ...org,
+      monthlyBudget: org.monthlyBudget ? Number(org.monthlyBudget) : null,
+    });
   } catch (err) {
     next(err);
   }

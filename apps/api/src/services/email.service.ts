@@ -164,6 +164,52 @@ function usageTipsEmailHtml() {
 }
 
 // ---------------------------------------------------------------------------
+// Email 4: Budget alert
+// ---------------------------------------------------------------------------
+
+interface BudgetAlertParams {
+  orgName: string;
+  scopeName: string;
+  scope: "org" | "project";
+  threshold: number;
+  spend: number;
+  budget: number;
+  pct: number;
+}
+
+function budgetAlertHtml(params: BudgetAlertParams) {
+  const { orgName, scopeName, scope, threshold, spend, budget, pct } = params;
+  const pctDisplay = Math.round(pct * 100);
+  const exceeded = threshold >= 1;
+  const dashUrl = process.env.NEXT_PUBLIC_FRONTEND_URL
+    ? `${process.env.NEXT_PUBLIC_FRONTEND_URL}/dashboard/billing`
+    : "https://app.ai-gateway.dev/dashboard/billing";
+
+  const scopeLabel = scope === "project" ? `project <strong>${scopeName}</strong>` : `organization <strong>${orgName}</strong>`;
+
+  return layout(`
+    ${h1(exceeded ? `Budget exceeded` : `Budget alert: ${Math.round(threshold * 100)}% reached`)}
+    ${p(exceeded
+      ? `Your ${scopeLabel} has <strong>exceeded its monthly budget</strong>. Current spend is <strong>$${spend.toFixed(2)}</strong> against a budget of <strong>$${budget.toFixed(2)}</strong>.`
+      : `Your ${scopeLabel} has reached <strong>${pctDisplay}%</strong> of its monthly budget. Current spend is <strong>$${spend.toFixed(2)}</strong> of <strong>$${budget.toFixed(2)}</strong>.`
+    )}
+    <div style="margin:24px 0;padding:16px;background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:14px;font-weight:600;color:#92400e;">Monthly spend</span>
+        <span style="font-size:14px;font-weight:700;color:#92400e;">$${spend.toFixed(2)} / $${budget.toFixed(2)}</span>
+      </div>
+      <div style="background:#e5e7eb;border-radius:4px;height:8px;overflow:hidden;">
+        <div style="background:${exceeded ? "#ef4444" : "#f59e0b"};height:100%;width:${Math.min(pctDisplay, 100)}%;"></div>
+      </div>
+      <div style="text-align:right;margin-top:4px;font-size:12px;color:#92400e;">${pctDisplay}%</div>
+    </div>
+    ${p("You can adjust your budget limits or review usage details in the billing dashboard.")}
+    ${cta("View billing dashboard →", dashUrl)}
+    <p style="margin:16px 0 0;font-size:13px;color:#6b7280;">To stop receiving these alerts, set your budget to unlimited in the dashboard.</p>
+  `);
+}
+
+// ---------------------------------------------------------------------------
 // Exported functions
 // ---------------------------------------------------------------------------
 
@@ -177,4 +223,13 @@ export async function sendActivationEmail(to: string, orgName: string) {
 
 export async function sendUsageTipsEmail(to: string) {
   await sendEmail(to, "5 tips to get the most out of AI Gateway", usageTipsEmailHtml());
+}
+
+export async function sendBudgetAlertEmail(to: string, params: BudgetAlertParams) {
+  const threshold = params.threshold;
+  const subject =
+    threshold >= 1
+      ? `Budget exceeded: ${params.scopeName} has spent $${params.spend.toFixed(2)} of $${params.budget.toFixed(2)}`
+      : `Budget alert: ${params.scopeName} has reached ${Math.round(threshold * 100)}% of budget`;
+  await sendEmail(to, subject, budgetAlertHtml(params));
 }

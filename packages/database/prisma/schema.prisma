@@ -16,6 +16,7 @@ model Organization {
   clerkOrgId String? @unique
   plan      Plan     @default(FREE)
   monthlyBudget Decimal? @db.Decimal(12, 4)
+  slackWebhookUrl String?
 
   // Stripe billing
   stripeCustomerId     String?            @unique

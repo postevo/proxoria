@@ -8,6 +8,7 @@ import { logger } from "./lib/logger.js";
 import { apiRouter } from "./routes/api.js";
 import { authRouter } from "./routes/auth.js";
 import { errorHandler } from "./middleware/errorHandler.js";
+import { scheduleDailyBudgetAlerts } from "./services/budget-alerts.service.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -53,6 +54,7 @@ app.use(errorHandler);
 
 app.listen(PORT, () => {
   logger.info(`AI Gateway API running on port ${PORT}`);
+  scheduleDailyBudgetAlerts();
 });
 
 export default app;
