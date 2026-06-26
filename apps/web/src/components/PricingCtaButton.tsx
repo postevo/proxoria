@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 
 interface PricingCtaButtonProps {
-  plan: "STARTER" | "PRO";
+  plan: "FREE" | "STARTER" | "PRO";
   label: string;
   highlight?: boolean;
 }
@@ -14,6 +14,10 @@ export function PricingCtaButton({ plan, label, highlight }: PricingCtaButtonPro
   const { isSignedIn } = useAuth();
 
   function handleClick() {
+    if (plan === "FREE") {
+      router.push(isSignedIn ? "/dashboard" : "/sign-up");
+      return;
+    }
     if (isSignedIn) {
       router.push(`/dashboard/billing?upgrade=${plan}`);
     } else {
