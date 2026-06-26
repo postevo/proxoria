@@ -1,0 +1,181 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Organizations / Teams ───────────────────────────────────────────────────
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  clerkOrgId String? @unique
+  plan      Plan     @default(FREE)
+  monthlyBudget Decimal? @db.Decimal(12, 4)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members   OrgMember[]
+  apiKeys   ApiKey[]
+  projects  Project[]
+  usageLogs UsageLog[]
+  budgetAlerts BudgetAlert[]
+  auditLogs AuditLog[]
+}
+
+enum Plan {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+model OrgMember {
+  id        String   @id @default(cuid())
+  orgId     String
+  userId    String
+  role      OrgRole  @default(MEMBER)
+  createdAt DateTime @default(now())
+
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([orgId, userId])
+  @@index([userId])
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+// ─── API Keys ────────────────────────────────────────────────────────────────
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  orgId       String
+  name        String
+  keyHash     String    @unique
+  keyPrefix   String    // First 8 chars for display: "ak_live_"
+  scopes      String[]
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+  createdByUserId String?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  usageLogs   UsageLog[]
+
+  @@index([orgId])
+  @@index([keyHash])
+}
+
+// ─── Projects ────────────────────────────────────────────────────────────────
+
+model Project {
+  id          String   @id @default(cuid())
+  orgId       String
+  name        String
+  slug        String
+  description String?
+  monthlyBudget Decimal? @db.Decimal(12, 4)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  usageLogs   UsageLog[]
+  budgetAlerts BudgetAlert[]
+
+  @@unique([orgId, slug])
+  @@index([orgId])
+}
+
+// ─── Usage Logging ───────────────────────────────────────────────────────────
+
+model UsageLog {
+  id            String   @id @default(cuid())
+  orgId         String
+  projectId     String?
+  apiKeyId      String?
+  userId        String?
+
+  provider      LLMProvider
+  model         String
+  promptTokens  Int
+  completionTokens Int
+  totalTokens   Int
+  costUsd       Decimal  @db.Decimal(12, 8)
+
+  latencyMs     Int
+  statusCode    Int
+  requestId     String?  @unique
+  
+  // Streaming, tool_use, etc.
+  metadata      Json?
+  
+  createdAt     DateTime @default(now())
+
+  org           Organization @relation(fields: [orgId], references: [id])
+  project       Project?     @relation(fields: [projectId], references: [id])
+  apiKey        ApiKey?      @relation(fields: [apiKeyId], references: [id])
+
+  @@index([orgId, createdAt])
+  @@index([orgId, provider, createdAt])
+  @@index([projectId, createdAt])
+  @@index([apiKeyId, createdAt])
+}
+
+enum LLMProvider {
+  ANTHROPIC
+  OPENAI
+  GOOGLE
+}
+
+// ─── Budget Alerts ───────────────────────────────────────────────────────────
+
+model BudgetAlert {
+  id          String   @id @default(cuid())
+  orgId       String
+  projectId   String?
+  threshold   Decimal  @db.Decimal(5, 2) // Percentage: 0.80 = 80%
+  notifiedAt  DateTime?
+  period      AlertPeriod @default(MONTHLY)
+  createdAt   DateTime @default(now())
+
+  org         Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  project     Project?     @relation(fields: [projectId], references: [id])
+
+  @@index([orgId])
+}
+
+enum AlertPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+// ─── Audit Log ───────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  orgId     String
+  actorId   String   // userId or apiKeyId
+  actorType String   // "user" | "api_key"
+  action    String   // e.g. "api_key.created", "member.invited"
+  targetId  String?
+  targetType String?
+  metadata  Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  org       Organization @relation(fields: [orgId], references: [id])
+
+  @@index([orgId, createdAt])
+  @@index([orgId, actorId])
+}
