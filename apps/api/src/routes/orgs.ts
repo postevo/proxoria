@@ -72,8 +72,11 @@ orgsRouter.patch("/me", requireAdmin, async (req: Request, res: Response, next: 
     });
 
     res.json({
-      ...org,
+      id: org.id,
+      name: org.name,
+      plan: org.plan,
       monthlyBudget: org.monthlyBudget ? Number(org.monthlyBudget) : null,
+      slackAlertEnabled: !!org.slackWebhookUrl,
     });
   } catch (err) {
     next(err);
