@@ -88,7 +88,7 @@ resp = requests.post(
 )
 data = resp.json()
 print(data["content"])
-print(f"Tokens: {data['usage']['totalTokens']}, Cost: ${data['costUsd']:.6f}")`}</CodeBlock>
+print(f"Tokens: {data['usage']['totalTokens']}, Cost: \${data['costUsd']:.6f}")`}</CodeBlock>
             </div>
           </div>
         </Section>

@@ -114,7 +114,7 @@ response = requests.post(
 data = response.json()
 print(data["content"])
 print(f"Tokens used: {data['usage']['totalTokens']}")
-print(f"Cost: ${data['costUsd']:.6f}")`}</CodeBlock>
+print(f"Cost: \${data['costUsd']:.6f}")`}</CodeBlock>
             </div>
 
             <div>
