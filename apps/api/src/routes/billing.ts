@@ -12,6 +12,12 @@ import { logger } from "../lib/logger.js";
 
 export const billingRouter = Router();
 
+function isAllowedReturnUrl(url: string): boolean {
+  const allowedOrigin = process.env.ALLOWED_FRONTEND_URL;
+  if (!allowedOrigin) return false;
+  return url.startsWith(allowedOrigin);
+}
+
 const CheckoutSchema = z.object({
   plan: z.enum(["STARTER", "PRO"]),
   successUrl: z.string().url(),
@@ -27,6 +33,15 @@ billingRouter.post(
     const parsed = CheckoutSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({ error: "Invalid request", details: parsed.error.issues });
+      return;
+    }
+
+    if (!isAllowedReturnUrl(parsed.data.successUrl)) {
+      res.status(400).json({ error: "Invalid successUrl" });
+      return;
+    }
+    if (!isAllowedReturnUrl(parsed.data.cancelUrl)) {
+      res.status(400).json({ error: "Invalid cancelUrl" });
       return;
     }
 
@@ -53,6 +68,11 @@ billingRouter.post(
     const returnUrl = req.body.returnUrl as string | undefined;
     if (!returnUrl) {
       res.status(400).json({ error: "returnUrl is required" });
+      return;
+    }
+
+    if (!isAllowedReturnUrl(returnUrl)) {
+      res.status(400).json({ error: "Invalid returnUrl" });
       return;
     }
 

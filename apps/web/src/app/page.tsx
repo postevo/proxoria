@@ -81,7 +81,7 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-gray-900">AI Gateway</span>
+            <span className="text-xl font-bold text-gray-900">Proxoria</span>
             <span className="text-xs font-medium bg-brand-50 text-brand-600 px-2 py-0.5 rounded-full">Beta</span>
           </div>
           <div className="flex items-center gap-2">
@@ -125,7 +125,7 @@ export default function LandingPage() {
           {" "}— with cost controls and audit logs
         </h1>
         <p className="text-lg sm:text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed">
-          Enterprise AI teams use AI Gateway to unify their LLM stack, track spend by team and project, and enforce access policies — without rebuilding their integrations.
+          Enterprise AI teams use Proxoria to unify their LLM stack, track spend by team and project, and enforce access policies — without rebuilding their integrations.
         </p>
         <div id="waitlist" className="max-w-md mx-auto">
           <WaitlistForm />
@@ -249,13 +249,13 @@ const client = new Anthropic({
       {/* Footer */}
       <footer className="border-t border-gray-100 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-400">
-          <span className="font-semibold text-gray-900">AI Gateway</span>
+          <span className="font-semibold text-gray-900">Proxoria</span>
           <nav className="flex gap-6">
             <Link href="/pricing" className="hover:text-gray-700 transition-colors">Pricing</Link>
             <Link href="#features" className="hover:text-gray-700 transition-colors">Features</Link>
             <a href="mailto:hello@ai-gateway.dev" className="hover:text-gray-700 transition-colors">Contact</a>
           </nav>
-          <span>&copy; {new Date().getFullYear()} AI Gateway. All rights reserved.</span>
+          <span>&copy; {new Date().getFullYear()} Proxoria. All rights reserved.</span>
         </div>
       </footer>
     </div>

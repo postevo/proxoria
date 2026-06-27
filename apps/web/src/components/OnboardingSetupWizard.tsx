@@ -293,7 +293,7 @@ export function OnboardingSetupWizard() {
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Create your gateway API key</h2>
               <p className="text-sm text-gray-500 mt-1">
-                This is the key your apps use to call the AI Gateway. You can create more later.
+                This is the key your apps use to call the Proxoria. You can create more later.
               </p>
             </div>
 

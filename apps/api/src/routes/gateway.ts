@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { routeRequest } from "../services/gateway.service.js";
+import { requireScope } from "../middleware/auth.js";
 
 export const gatewayRouter = Router();
 
@@ -20,7 +21,7 @@ const GatewayRequestSchema = z.object({
 });
 
 // POST /v1/gateway/chat
-gatewayRouter.post("/chat", async (req: Request, res: Response, next: NextFunction) => {
+gatewayRouter.post("/chat", requireScope("gateway:write"), async (req: Request, res: Response, next: NextFunction) => {
   const parsed = GatewayRequestSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid request", details: parsed.error.issues });

@@ -21,7 +21,7 @@ export function Sidebar() {
   return (
     <aside className="w-56 bg-white border-r border-gray-100 flex flex-col">
       <div className="p-5 border-b border-gray-100">
-        <span className="text-lg font-bold text-brand-600">AI Gateway</span>
+        <span className="text-lg font-bold text-brand-600">Proxoria</span>
       </div>
       <nav className="flex-1 p-3">
         {nav.map((item) => (

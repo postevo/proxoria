@@ -53,7 +53,7 @@ app.use("/v1", apiRouter);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  logger.info(`AI Gateway API running on port ${PORT}`);
+  logger.info(`Proxoria API running on port ${PORT}`);
   scheduleDailyBudgetAlerts();
 });
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { BillingOverview } from "../../../components/BillingOverview";
 
-export const metadata: Metadata = { title: "Billing — AI Gateway" };
+export const metadata: Metadata = { title: "Billing — Proxoria" };
 
 export default function BillingPage() {
   return (

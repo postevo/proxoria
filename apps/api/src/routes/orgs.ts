@@ -30,7 +30,7 @@ orgsRouter.get("/me", async (req: Request, res: Response, next: NextFunction) =>
       slug: org.slug,
       plan: org.plan,
       monthlyBudget: org.monthlyBudget ? Number(org.monthlyBudget) : null,
-      slackWebhookUrl: org.slackWebhookUrl,
+      slackAlertEnabled: !!org.slackWebhookUrl,
       createdAt: org.createdAt,
       counts: {
         members: org._count.members,

@@ -274,7 +274,7 @@ teamsRouter.get(
 
       res.json({
         orgMonthlyBudget: org?.monthlyBudget ? Number(org.monthlyBudget) : null,
-        slackWebhookUrl: org?.slackWebhookUrl ?? null,
+        slackAlertEnabled: !!org?.slackWebhookUrl,
         projectMonthlyBudget: projectBudget,
         alerts: alerts.map((a) => ({
           id: a.id,

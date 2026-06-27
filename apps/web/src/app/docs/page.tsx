@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Documentation Overview",
-  description: "AI Gateway documentation — quickstart, provider reference, cost management, and team management.",
+  description: "Proxoria documentation — quickstart, provider reference, cost management, and team management.",
 };
 
 const GUIDES = [
@@ -39,7 +39,7 @@ export default function DocsIndexPage() {
       <div className="mb-10">
         <h1 className="text-3xl font-bold text-gray-900 mb-3">Documentation</h1>
         <p className="text-gray-500 text-lg leading-relaxed">
-          Everything you need to integrate the AI Gateway, control costs, and manage your team.
+          Everything you need to integrate the Proxoria, control costs, and manage your team.
         </p>
       </div>
 

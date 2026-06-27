@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Quickstart",
-  description: "Make your first AI Gateway call in under 5 minutes.",
+  description: "Make your first Proxoria call in under 5 minutes.",
 };
 
 export default function QuickstartPage() {
@@ -18,7 +18,7 @@ export default function QuickstartPage() {
       </div>
 
       <div className="mb-8 bg-brand-50 border border-brand-100 rounded-xl p-4 text-sm text-brand-800">
-        <strong>Prerequisites:</strong> An AI Gateway account and an API key from at least one provider (Anthropic, OpenAI, or Google).{" "}
+        <strong>Prerequisites:</strong> An Proxoria account and an API key from at least one provider (Anthropic, OpenAI, or Google).{" "}
         <Link href="/sign-up" className="underline hover:text-brand-900">Sign up free →</Link>
       </div>
 
