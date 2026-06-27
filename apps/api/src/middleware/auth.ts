@@ -98,7 +98,7 @@ export async function authenticateClerkUser(
           { headers: { Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}` } },
         );
         if (!clerkRes.ok) throw new Error(`Clerk API ${clerkRes.status}`);
-        const clerkOrg = await clerkRes.json();
+        const clerkOrg = await clerkRes.json() as { slug?: string; name: string };
         const slug = (clerkOrg.slug ?? clerkOrgId)
           .toLowerCase()
           .replace(/[^a-z0-9-]/g, "-")

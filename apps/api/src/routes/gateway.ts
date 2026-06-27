@@ -6,7 +6,7 @@ export const gatewayRouter = Router();
 
 const GatewayRequestSchema = z.object({
   provider: z.enum(["anthropic", "openai", "google"]),
-  model: z.string().optional(),
+  model: z.string(),
   messages: z.array(
     z.object({
       role: z.enum(["user", "assistant", "system"]),
