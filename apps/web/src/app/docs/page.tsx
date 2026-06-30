@@ -74,12 +74,12 @@ export default function DocsIndexPage() {
             support@ai-gateway.dev
           </a>
           <span className="text-brand-300">·</span>
-          <a
+          <Link
             href="/sign-up"
             className="text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors"
           >
             Create account →
-          </a>
+          </Link>
         </div>
       </div>
     </div>

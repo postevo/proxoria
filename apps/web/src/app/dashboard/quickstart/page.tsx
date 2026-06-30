@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function QuickstartPage() {
   return (
     <div className="p-8 max-w-3xl">
@@ -142,7 +144,7 @@ curl "https://api.yourdomain.com/v1/usage/logs?page=1&limit=50" \\
                 <p className="text-gray-500 text-xs">support@yourdomain.com</p>
               </div>
             </a>
-            <a
+            <Link
               href="/dashboard/usage"
               className="flex items-center gap-2 p-4 border border-gray-200 rounded-xl hover:border-brand-300 transition-colors"
             >
@@ -151,7 +153,7 @@ curl "https://api.yourdomain.com/v1/usage/logs?page=1&limit=50" \\
                 <p className="font-medium text-gray-900">Usage dashboard</p>
                 <p className="text-gray-500 text-xs">View logs and costs</p>
               </div>
-            </a>
+            </Link>
           </div>
         </div>
       </div>
