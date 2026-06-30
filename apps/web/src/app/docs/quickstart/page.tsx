@@ -39,7 +39,7 @@ export default function QuickstartPage() {
 
         <Step step={2} title="Create a gateway API key">
           <p className="text-sm text-gray-600 mb-4">
-            Gateway keys authenticate your application's requests. Create one with a descriptive name — the raw secret is returned only once.
+            Gateway keys authenticate your application requests. Create one with a descriptive name — the raw secret is returned only once.
           </p>
           <CodeBlock lang="bash">{`curl -X POST https://api.ai-gateway.dev/v1/keys \\
   -H "Authorization: Bearer YOUR_DASHBOARD_SESSION_TOKEN" \\

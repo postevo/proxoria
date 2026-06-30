@@ -324,9 +324,9 @@ export function OnboardingSetupWizard() {
         {step === 3 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">You're all set! Make your first call.</h2>
+              <h2 className="text-lg font-semibold text-gray-900">You are all set! Make your first call.</h2>
               <p className="text-sm text-gray-500 mt-1">
-                Your gateway API key is shown below. Copy it now — it won't be shown again.
+                Your gateway API key is shown below. Copy it now — it will not be shown again.
               </p>
             </div>
 
