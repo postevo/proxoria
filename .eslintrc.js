@@ -3,6 +3,7 @@ module.exports = {
   extends: ["eslint:recommended"],
   env: {
     node: true,
+    browser: true,
     es2022: true,
   },
   parser: "@typescript-eslint/parser",
