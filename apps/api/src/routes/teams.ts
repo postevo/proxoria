@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { clerkClient } from "@clerk/clerk-sdk-node";
 import { prisma } from "../lib/db.js";
-import { NotFoundError, ForbiddenError } from "../lib/errors.js";
+import { NotFoundError } from "../lib/errors.js";
 import { requireAdmin } from "../middleware/auth.js";
 
 export const teamsRouter = Router();

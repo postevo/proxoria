@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { createHash, randomBytes } from "crypto";
 import { prisma } from "../lib/db.js";
-import { NotFoundError, ForbiddenError } from "../lib/errors.js";
+import { NotFoundError } from "../lib/errors.js";
 
 export const keysRouter = Router();
 
