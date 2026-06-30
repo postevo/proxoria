@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { UsageOverview } from "../../components/UsageOverview";
 import { CostChart } from "../../components/CostChart";
 
