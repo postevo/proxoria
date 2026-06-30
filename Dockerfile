@@ -1,5 +1,5 @@
 # ─── Stage 1: Install all dependencies ───────────────────────────────────────
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 WORKDIR /app
 
 COPY package*.json ./
@@ -37,7 +37,7 @@ RUN node -e " \
 RUN cd apps/api && npx tsc
 
 # ─── Stage 3: Production runtime ─────────────────────────────────────────────
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
